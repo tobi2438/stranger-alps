@@ -148,17 +148,17 @@ config = {
     _sdl2 : "canvas",
     user_canvas : 0,
     user_canvas_managed : 0,
-    gui_divider : 2,
+    gui_divider : 1, // Reduced to 1 to give more room to the game
     ume_block : 1,
     can_close : 0,
     archive : "strangeralps",
-    gui_debug : 2,
+    gui_debug : 0, // Set to 0 to hide debug bars that cause the square look
     cdn : "https://pygame-web.github.io/cdn/0.9.3/",
     autorun : 0,
     PYBUILD : "3.12",
-    fb_ar   :  1.77,
-    fb_width : "1280",
-    fb_height : "720"
+    fb_ar   :  1.77, // Forces 16:9 aspect ratio
+    fb_width : "1600",
+    fb_height : "900"
 }
 
 function show_infobox() {
@@ -217,18 +217,16 @@ function show_infobox() {
         div.emscripten_border { border: 1px solid black; }
         div.thick_border { border: 4px solid black; }
 
-        /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-        /* average size of droid screen 470dp x 320dp  */
         canvas.emscripten {
             border: 0px none;
-            background-color: transparent;
-            width: 100%;
-            height: 100%;
+            background-color: black;
+            width: 100vw;       /* Full width of the browser */
+            height: 56.25vw;    /* 16:9 Height math (9/16 = 0.5625) */
+            max-height: 100vh;  /* Prevents it from being taller than the screen */
+            max-width: 177.78vh;/* Prevents it from being wider than 16:9 */
             z-index: 5;
-
             padding: 0;
-            margin: 0 auto;
-
+            margin: auto;       /* Centers it if the screen is too wide */
             position: absolute;
             top: 0;
             bottom: 0;
@@ -239,8 +237,9 @@ function show_infobox() {
         body {
             font-family: arial;
             margin: 0;
-            padding: none;
-            background-color:powderblue;
+            padding: 0;
+            background-color: #050514; /* Matches your game's dark sky */
+            overflow: hidden; /* Prevents accidental scrolling on iPad */
         }
 
         .topright{
@@ -312,26 +311,27 @@ height="720px"
     oncontextmenu="event.preventDefault()" tabindex=1 hidden>
     </canvas>
 
-    <div id="infobox">Loading, please wait ...</div>
-
-    <div id=html></div>
-
-    <div id=crt  class=bottomright >
-
-        <div id="system" hidden>
-            <div class="button-container">
-                <button id="aiostop" disabled>AIO ⏏︎</button>
-                <button id="aiopaused_true" disabled>AIO ■</button>
-                <button id="aiopaused_false" disabled>AIO ▶</button>
-                <button id="pygame_mixer_music_pause" disabled>Music ■</button>
-            </div>
-
-            <div class="button-container">
-                <div id=load_min>min</div>
-                <div id=load_avg>avg</div>
-                <div id=load_max>max</div>
-              <button id="load_rst" disabled>RESET</button>
-            </div>
+    <div id="infobox" onclick="this.style.display='none';" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(5, 5, 20, 0.95);
+        color: #ff2828;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 999999;
+        cursor: pointer;
+        font-family: 'Georgia', serif;
+        font-size: 32px;
+        text-align: center;">
+        <h1 style="font-size: 64px; margin-bottom: 20px;">STRANGER ALPS</h1>
+        <p>TAP SCREEN OR CLICK TO ENTER</p>
+        <p style="font-size: 18px; color: #aaa; margin-top: 30px;">(This unlocks high-quality audio)</p>
+    </div>
 
             <div id="level">(battery level unknown)</div>
             <div id="stateBattery">(charging state unknown)</div>
