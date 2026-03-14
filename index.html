@@ -220,18 +220,19 @@ function show_infobox() {
         canvas.emscripten {
             border: 0px none;
             background-color: black;
-            width: 100vw;       /* Full width of the browser */
-            height: 56.25vw;    /* 16:9 Height math (9/16 = 0.5625) */
-            max-height: 100vh;  /* Prevents it from being taller than the screen */
-            max-width: 177.78vh;/* Prevents it from being wider than 16:9 */
-            z-index: 5;
-            padding: 0;
-            margin: auto;       /* Centers it if the screen is too wide */
+            /* Force Landscape */
+            width: 100vw !important;
+            height: 56.25vw !important; /* 16:9 ratio */
+            max-height: 100vh;
+            max-width: 177.78vh;
+
+            display: block;
+            margin: auto;
             position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
         }
 
         body {
@@ -311,27 +312,22 @@ height="720px"
     oncontextmenu="event.preventDefault()" tabindex=1 hidden>
     </canvas>
 
-    <div id="infobox" onclick="this.style.display='none';" style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(5, 5, 20, 0.95);
-        color: #ff2828;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 999999;
-        cursor: pointer;
-        font-family: 'Georgia', serif;
-        font-size: 32px;
-        text-align: center;">
-        <h1 style="font-size: 64px; margin-bottom: 20px;">STRANGER ALPS</h1>
-        <p>TAP SCREEN OR CLICK TO ENTER</p>
-        <p style="font-size: 18px; color: #aaa; margin-top: 30px;">(This unlocks high-quality audio)</p>
+    <div id="infobox" onclick="resumeAudioContext()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050514; color: #ff2828; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999999; cursor: pointer;">
+        <h1 style="font-family: serif; font-size: 50px;">STRANGER ALPS</h1>
+        <p style="font-family: sans-serif;">TAP TO START</p>
     </div>
+
+    <script>
+        function resumeAudioContext() {
+            // This manually forces the WebAudio context to start
+            if (window.AudioContext || window.webkitAudioContext) {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                context.resume();
+            }
+            document.getElementById('infobox').style.display = 'none';
+            console.log("Audio Context Resumed for iPad");
+        }
+    </script>
 
             <div id="level">(battery level unknown)</div>
             <div id="stateBattery">(charging state unknown)</div>
@@ -378,19 +374,21 @@ frameborder="1"
     }
 
     async function custom_onload(debug_hidden) {
-        // this is called before anything python is loaded
-        // make your js customization here
         console.log(__FILE__, "custom_onload")
 
-        pyconsole.hidden = debug_hidden
-        system.hidden = debug_hidden
-        transfer.hidden = debug_hidden
-        info.hidden = debug_hidden
-        box.hidden =  debug_hidden
+        const safeHide = (id) => {
+            const el = document.getElementById(id);
+            if (el) el.hidden = debug_hidden;
+        };
 
-        show_infobox()
+        safeHide("pyconsole");
+        safeHide("system");
+        safeHide("transfer");
+        safeHide("info");
+        safeHide("box");
+
+        show_infobox();
     }
-
     function custom_prerun(){
         // no python main and no (MEMFS + VFS) yet.
         console.log(__FILE__, "custom_prerun")
