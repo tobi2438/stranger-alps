@@ -148,17 +148,17 @@ config = {
     _sdl2 : "canvas",
     user_canvas : 0,
     user_canvas_managed : 0,
-    gui_divider : 1, // Reduced to 1 to give more room to the game
+    gui_divider : 2,
     ume_block : 1,
     can_close : 0,
     archive : "strangeralps",
-    gui_debug : 0, // Set to 0 to hide debug bars that cause the square look
+    gui_debug : 2,
     cdn : "https://pygame-web.github.io/cdn/0.9.3/",
     autorun : 0,
     PYBUILD : "3.12",
-    fb_ar   :  1.77, // Forces 16:9 aspect ratio
-    fb_width : "1600",
-    fb_height : "900"
+    fb_ar   :  1.77,
+    fb_width : "1280",
+    fb_height : "720"
 }
 
 function show_infobox() {
@@ -217,30 +217,30 @@ function show_infobox() {
         div.emscripten_border { border: 1px solid black; }
         div.thick_border { border: 4px solid black; }
 
+        /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+        /* average size of droid screen 470dp x 320dp  */
         canvas.emscripten {
             border: 0px none;
-            background-color: black;
-            /* Force Landscape */
-            width: 100vw !important;
-            height: 56.25vw !important; /* 16:9 ratio */
-            max-height: 100vh;
-            max-width: 177.78vh;
-
-            display: block;
-            margin: auto;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            background-color: transparent;
+            width: 100%;
+            height: 100%;
             z-index: 5;
+
+            padding: 0;
+            margin: 0 auto;
+
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
 
         body {
             font-family: arial;
             margin: 0;
-            padding: 0;
-            background-color: #050514; /* Matches your game's dark sky */
-            overflow: hidden; /* Prevents accidental scrolling on iPad */
+            padding: none;
+            background-color:powderblue;
         }
 
         .topright{
@@ -312,22 +312,26 @@ height="720px"
     oncontextmenu="event.preventDefault()" tabindex=1 hidden>
     </canvas>
 
-    <div id="infobox" onclick="resumeAudioContext()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050514; color: #ff2828; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999999; cursor: pointer;">
-        <h1 style="font-family: serif; font-size: 50px;">STRANGER ALPS</h1>
-        <p style="font-family: sans-serif;">TAP TO START</p>
-    </div>
+    <div id="infobox">Loading, please wait ...</div>
 
-    <script>
-        function resumeAudioContext() {
-            // This manually forces the WebAudio context to start
-            if (window.AudioContext || window.webkitAudioContext) {
-                const context = new (window.AudioContext || window.webkitAudioContext)();
-                context.resume();
-            }
-            document.getElementById('infobox').style.display = 'none';
-            console.log("Audio Context Resumed for iPad");
-        }
-    </script>
+    <div id=html></div>
+
+    <div id=crt  class=bottomright >
+
+        <div id="system" hidden>
+            <div class="button-container">
+                <button id="aiostop" disabled>AIO ⏏︎</button>
+                <button id="aiopaused_true" disabled>AIO ■</button>
+                <button id="aiopaused_false" disabled>AIO ▶</button>
+                <button id="pygame_mixer_music_pause" disabled>Music ■</button>
+            </div>
+
+            <div class="button-container">
+                <div id=load_min>min</div>
+                <div id=load_avg>avg</div>
+                <div id=load_max>max</div>
+              <button id="load_rst" disabled>RESET</button>
+            </div>
 
             <div id="level">(battery level unknown)</div>
             <div id="stateBattery">(charging state unknown)</div>
@@ -374,21 +378,19 @@ frameborder="1"
     }
 
     async function custom_onload(debug_hidden) {
+        // this is called before anything python is loaded
+        // make your js customization here
         console.log(__FILE__, "custom_onload")
 
-        const safeHide = (id) => {
-            const el = document.getElementById(id);
-            if (el) el.hidden = debug_hidden;
-        };
+        pyconsole.hidden = debug_hidden
+        system.hidden = debug_hidden
+        transfer.hidden = debug_hidden
+        info.hidden = debug_hidden
+        box.hidden =  debug_hidden
 
-        safeHide("pyconsole");
-        safeHide("system");
-        safeHide("transfer");
-        safeHide("info");
-        safeHide("box");
-
-        show_infobox();
+        show_infobox()
     }
+
     function custom_prerun(){
         // no python main and no (MEMFS + VFS) yet.
         console.log(__FILE__, "custom_prerun")
